@@ -9,6 +9,9 @@
 # 사용기술
 - Vue3
 - Vuetify
+- vue3-apexcharts
+- axios
+- router
 
 # openApi
 - https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?scrIds=most_actives (인기차트)
