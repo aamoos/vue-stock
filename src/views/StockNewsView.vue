@@ -34,9 +34,12 @@
             />
           </template>
           <v-date-picker
-            v-model="fromDate"
+            :model-value="fromDate"
             :max="toDate || undefined"
-            @update:model-value="fromMenu = false"
+            @update:model-value="val => {
+              fromDate = formatDateToYYYYMMDD(val)
+              fromMenu = false
+            }"
             locale="en"
           />
         </v-menu>
@@ -62,10 +65,13 @@
             />
           </template>
           <v-date-picker
-            v-model="toDate"
+            :model-value="toDate"
             :min="fromDate || undefined"
             :max="today"
-            @update:model-value="toMenu = false"
+            @update:model-value="val => {
+              toDate = formatDateToYYYYMMDD(val)
+              toMenu = false
+            }"
             locale="en"
           />
         </v-menu>
@@ -129,21 +135,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 
-const searchSymbol = ref('')
+const route = useRoute()
+
+const today = new Date().toISOString().substr(0, 10)
+const searchSymbol = ref(route.query.symbol || '')
+const fromDate = ref(route.query.from || today)
+const toDate = ref(route.query.to || today)
+
 const newsList = ref([])
 const errorMessage = ref('')
 const loading = ref(false)
-const defaultImage = 'https://via.placeholder.com/400x180?text=No+Image'
 
 const fromMenu = ref(false)
 const toMenu = ref(false)
-
-const today = new Date().toISOString().substr(0, 10)
-const fromDate = ref('')
-const toDate = ref('')
 
 function formatDate(ts) {
   if (!ts) return '-'
@@ -151,9 +159,9 @@ function formatDate(ts) {
   return d.toLocaleString()
 }
 
-function toYYYYMMDD(dateStr) {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
+function formatDateToYYYYMMDD(date) {
+  if (!date) return ''
+  const d = new Date(date)
   const yyyy = d.getFullYear()
   const mm = String(d.getMonth() + 1).padStart(2, '0')
   const dd = String(d.getDate()).padStart(2, '0')
@@ -184,8 +192,8 @@ async function fetchNews() {
   try {
     const res = await axios.get(`/api/stocks/${searchSymbol.value}/news`, {
       params: {
-        from: toYYYYMMDD(fromDate.value),
-        to: toYYYYMMDD(toDate.value),
+        from: fromDate.value,
+        to: toDate.value,
       },
     })
     newsList.value = res.data
@@ -199,6 +207,20 @@ async function fetchNews() {
     loading.value = false
   }
 }
+
+// 페이지 진입 시 심볼, 날짜가 있으면 자동 조회
+onMounted(() => {
+  if (searchSymbol.value && fromDate.value && toDate.value) {
+    fetchNews()
+  }
+})
+
+// 심볼 변경 시 자동 조회
+watch(searchSymbol, (newVal) => {
+  if (newVal && fromDate.value && toDate.value) {
+    fetchNews()
+  }
+})
 </script>
 
 <style scoped>

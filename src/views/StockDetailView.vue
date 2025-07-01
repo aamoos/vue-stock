@@ -2,6 +2,8 @@
   <v-container>
     <h2 class="mb-4">{{ symbol }} 주가 상세 차트 & 재무제표</h2>
 
+    <v-btn color="primary" class="mb-4" @click="goNews">뉴스 보기</v-btn>
+
     <v-row align="center" class="mb-4">
       <v-col cols="6" sm="3">
         <v-select
@@ -73,11 +75,17 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
 const route = useRoute()
+const router = useRouter()
+
 const symbol = route.params.symbol
+
+function goNews() {
+  router.push({ path: '/news', query: { symbol } })
+}
 
 const allRanges = ['1d', '5d', '1mo', '3mo', '1y']
 const allIntervals = ['1m', '5m', '15m', '1d']

@@ -14,14 +14,15 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0',           // 🔥 외부 접속 허용
+    port: 5173,                // 원하는 포트
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8080', // 백엔드 API 주소
         changeOrigin: true,
-        // ✅ 바꿔야 함!
-        rewrite: path => path, // or rewrite: path => path
+        rewrite: path => path,
       },
     },
-    historyApiFallback: true,
+    historyApiFallback: true, // SPA 라우터 대응
   },
 })
